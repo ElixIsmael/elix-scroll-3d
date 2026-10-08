@@ -1,13 +1,148 @@
 # elix-scroll-3d
 
-Skill instalável de IA para construir sites com ambiente 3D animado por scroll que
-sejam rápidos, indexáveis e realmente bons no celular.
+An installable AI skill for scroll-driven 3D websites that stay fast, indexable,
+and genuinely usable on mid-range phones.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Claude Code](https://img.shields.io/badge/Claude_Code-skill-D97757)
+![AGENTS.md](https://img.shields.io/badge/AGENTS.md-Cursor_·_Codex_·_Copilot_·_Gemini-555)
+
+**English** · [Português](#português)
+
+---
+
+## The thesis
+
+There are a lot of beautiful, badly built 3D websites. They stutter on mid-range
+hardware, ship tens of megabytes, fail Core Web Vitals, and hand Google an empty
+canvas. The effect is real, and so is the bill.
+
+This skill exists to get the effect without the bill. And when 3D is not
+justified, it says so: it recommends video or an image and explains the trade.
+
+## What it looks like in practice
+
+**Prompt:** "I want a 3D hero with our logo spinning as the visitor scrolls."
+
+**Response with the skill loaded:**
+
+> Before technique: what does 3D add here that an image would not?
+> A spinning logo is the classic case that fails all three tests. The visitor
+> learns nothing from the back of the logo, the space is not the product, and
+> the transformation is not the content.
+>
+> Recommendation: a static logo, or a short looping video if the motion matters.
+> You save the model, the decoder, the tier logic, the fallback path, and the
+> memory cleanup, and you get a page that loads instantly.
+>
+> If the goal is to impress in the hero, there is an alternative that pays for
+> itself: a mechanic that demonstrates what you do. Tell me the service and I
+> will propose one.
+
+That is the intended behavior. A skill that can only say yes to 3D is a skill
+that produces slow websites.
+
+## What it does
+
+- **Advises against 3D when it does not belong.** First step of the skill, taken
+  seriously. If the answer to "what does 3D add" is "it looks impressive", the
+  honest recommendation is an optimized video.
+- **Requires the mechanic to demonstrate the service.** Decorative animation is
+  dead weight. The skill requires the climax to coincide with the call to action.
+- **Separates the two scene families** (procedural and asset-based), which have
+  completely different failure modes, and prefers procedural whenever the result
+  is equivalent.
+- **Imposes a model audit before download**: named hierarchy, density against
+  on-screen size, scale, pivot, and license.
+- **Sets a performance budget before the first line of code**, with device tiers
+  and the rule that the canvas is never the LCP.
+- **Treats mobile as the main setting**, not as a final adaptation.
+- **Covers fallback, reduced motion, and indexing**, because a canvas without
+  equivalent HTML is a site that is invisible to Google.
+
+Reference stack is Three.js plus GSAP ScrollTrigger. The budget, degradation,
+and fallback principles are written to survive a change of library.
+
+## Install
+
+```bash
+git clone https://github.com/ElixIsmael/elix-scroll-3d.git
+cd elix-scroll-3d && ./install.sh
+```
+
+Reopen your Claude Code session. The skill loads on its own when the topic comes
+up: scroll animation, a Three.js scene, a GLB model on a page, scrollytelling, or
+a 3D page that is slow on mobile.
+
+| Command | What it does |
+|---|---|
+| `./install.sh` | installs into `~/.claude`, applies to every project |
+| `./install.sh --here` | installs into `./.claude`, this project only |
+| `./install.sh --copy` | copies instead of symlinking, freezing the version |
+| `./install.sh --remove` | undoes it, removing only what this repo installed |
+
+**Other agents** (Cursor, Codex, Copilot, Gemini CLI): nothing to install, just
+point the agent at [AGENTS.md](AGENTS.md).
+
+**Not for:** games, VR or AR, scientific data visualization, or a brochure site
+that does not need 3D at all.
+
+## Presets by mechanic
+
+Organized by scene mechanic, not by client industry. The mechanic determines the
+pipeline, the cost, and the traps. The industry determines nothing.
+
+| Mechanic | Pipeline | Good at demonstrating | Main trap |
+|---|---|---|---|
+| Mask reveal | Procedural | Before and after, surface transformation | A perfect edge announces the effect |
+| Curve travelling | Either | A journey, a process with stages | Arc length sampling |
+| Orbited object | Asset | Craft, physical detail | Model weight, lighting cost |
+| Assembly explosion | Asset, hierarchy required | Internal engineering | A merged mesh cannot be fixed in code |
+| Explorable scene | Hybrid | Space as the product | Scope, and visitors getting lost |
+| State transformation | Either | Configurability | Morph targets are expensive, intermediate states must hold up |
+
+## What is inside
+
+```
+skills/elix-scroll-3d/
+├── SKILL.md                the skill, loaded on demand
+└── references/
+    ├── decision.md         when 3D earns its place, and what the mechanic proves
+    ├── pipelines.md        procedural scene vs. asset-based scene
+    ├── budget.md           performance budget and device tiers
+    ├── asset-audit.md      how to evaluate a model before downloading it
+    ├── assets.md           export, compression, and format
+    ├── choreography.md     scroll animation and camera patterns
+    ├── mobile.md           gesture, touch, and degradation
+    ├── fallback-seo.md     real content, reduced motion, and indexing
+    ├── presets.md          presets by mechanic
+    └── checklist.md        delivery checklist
+```
+
+## Works on its own
+
+This skill is specialized: it covers only what is specific to 3D and scroll
+animation, and it works without depending on anything else. General SEO,
+accessibility, and delivery standards are handled by its companion skill,
+[elix-front](https://github.com/ElixIsmael/elix-front). The two are designed to
+be installed together.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Technical corrections and traps found on
+real projects are especially welcome. Measured numbers are worth more than
+estimates: if you measured it, send the measurement and the device.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
 
 ---
 
 ## Português
+
+Skill instalável de IA para construir sites com ambiente 3D animado por scroll que
+sejam rápidos, indexáveis e realmente bons no celular.
 
 ### A tese
 
@@ -18,6 +153,28 @@ Google. O efeito é real, mas a conta também.
 Esta skill existe para provar que dá para ter o efeito **sem** pagar esse preço.
 E, quando o 3D não se justifica, ela diz isso na cara: recomenda vídeo ou imagem
 e explica a troca.
+
+### Na prática
+
+**Pergunta:** "Quero um hero 3D com nosso logo girando enquanto a pessoa rola."
+
+**Resposta com a skill carregada:**
+
+> Antes da técnica: o que o 3D acrescenta aqui que uma imagem não acrescentaria?
+> Um logo girando é o caso clássico que falha nos três critérios. O visitante não
+> aprende nada com o verso do logo, o espaço não é o produto, e a transformação
+> não é o conteúdo.
+>
+> Recomendação: logo estático, ou um vídeo curto em loop se o movimento importa.
+> Você economiza o modelo, o decoder, a lógica de tier, o caminho de fallback e
+> o descarte de memória, e ganha uma página que carrega instantaneamente.
+>
+> Se o objetivo é impressionar no hero, existe uma alternativa que se paga:
+> uma mecânica que demonstre o que vocês fazem. Me diz qual é o serviço e eu
+> proponho uma.
+
+Esse é o comportamento pretendido. Uma skill que só sabe dizer sim para 3D é uma
+skill que produz sites lentos.
 
 ### O que ela faz
 
@@ -44,38 +201,13 @@ cd elix-scroll-3d && ./install.sh
 ```
 
 Reabra a sessão do Claude Code. A skill carrega sozinha quando o assunto aparece.
-
-| Comando | O que faz |
-|---|---|
-| `./install.sh` | instala em `~/.claude`, vale para todos os projetos |
-| `./install.sh --here` | instala em `./.claude`, só o projeto atual |
-| `./install.sh --copy` | copia em vez de criar symlink, congela a versão |
-| `./install.sh --remove` | desfaz, removendo só o que veio deste repositório |
+As opções `--here`, `--copy` e `--remove` estão na [tabela acima](#install).
 
 **Outros agentes** (Cursor, Codex, Copilot, Gemini CLI): aponte para o
 [AGENTS.md](AGENTS.md), sem instalar nada.
 
-### Exemplo de uso
-
-**Pergunta:** "Quero um hero 3D com nosso logo girando enquanto a pessoa rola."
-
-**Resposta com a skill carregada:**
-
-> Antes da técnica: o que o 3D acrescenta aqui que uma imagem não acrescentaria?
-> Um logo girando é o caso clássico que falha nos três critérios. O visitante não
-> aprende nada com o verso do logo, o espaço não é o produto, e a transformação
-> não é o conteúdo.
->
-> Recomendação: logo estático, ou um vídeo curto em loop se o movimento importa.
-> Você economiza o modelo, o decoder, a lógica de tier, o caminho de fallback e
-> o descarte de memória, e ganha uma página que carrega instantaneamente.
->
-> Se o objetivo é impressionar no hero, existe uma alternativa que se paga:
-> uma mecânica que demonstre o que vocês fazem. Me diz qual é o serviço e eu
-> proponho uma.
-
-Esse é o comportamento pretendido. Uma skill que só sabe dizer sim para 3D é uma
-skill que produz sites lentos.
+**Não serve para:** jogos, VR ou AR, visualização de dados científicos, ou site
+institucional que não precisa de 3D.
 
 ### Predefinições por mecânica
 
@@ -91,122 +223,23 @@ pipeline, o custo e as armadilhas. O ramo não determina nada.
 | Cena explorável | Híbrido | O espaço como produto | Escopo, e o visitante se perder |
 | Transformação de estado | Qualquer | Configurabilidade | Morph target é caro, estados intermediários precisam fechar |
 
-### Estrutura
-
-```
-.
-├── README.md
-├── LICENSE
-├── CONTRIBUTING.md
-├── AGENTS.md
-├── install.sh
-└── skills/elix-scroll-3d/
-    ├── SKILL.md
-    └── references/
-        ├── decision.md         quando 3D vale a pena, e o que a mecânica prova
-        ├── pipelines.md        cena procedural x cena com asset
-        ├── budget.md           orçamento e tiers de dispositivo
-        ├── asset-audit.md      como avaliar um modelo antes de baixar
-        ├── assets.md           exportação, compressão e formato
-        ├── choreography.md     padrões de animação por scroll e câmera
-        ├── mobile.md           gesto, toque e degradação
-        ├── fallback-seo.md     conteúdo real, reduced motion e indexação
-        ├── presets.md          predefinições por mecânica
-        └── checklist.md        checklist de entrega
-```
+A estrutura dos arquivos está na [seção em inglês](#what-is-inside).
 
 ### Funciona sozinha
 
 Esta skill é especializada: cuida só do que é específico de 3D e animação por
-scroll. Ela assume que o cuidado geral com SEO, acessibilidade e identidade
-visual é tratado em outro lugar, e funciona sem depender disso.
+scroll, e funciona sem depender de nada. SEO geral, acessibilidade e padrão de
+entrega ficam com a skill parceira,
+[elix-front](https://github.com/ElixIsmael/elix-front). As duas foram pensadas
+para serem instaladas juntas.
 
-Foi pensada para acompanhar uma skill base de frontend e SEO, o `elix-front`,
-ainda não publicada. O link entra aqui quando ela sair.
-
-### Contribuir
+### Contribuir e licença
 
 Veja [CONTRIBUTING.md](CONTRIBUTING.md). Correção de erro técnico e armadilha
 encontrada em projeto real são especialmente bem-vindas. Número medido vale mais
 que número estimado: se você mediu, mande a medição e o aparelho.
 
-### Licença
-
 MIT. Veja [LICENSE](LICENSE).
-
----
-
-## English
-
-### The thesis
-
-There are a lot of beautiful, badly built 3D websites. They stutter on mid-range
-hardware, ship tens of megabytes, fail Core Web Vitals, and hand Google an empty
-canvas. The effect is real, and so is the bill.
-
-This skill exists to get the effect without the bill. And when 3D is not
-justified, it says so: it recommends video or an image and explains the trade.
-
-### What it does
-
-- **Advises against 3D when it does not belong.** First step of the skill, taken
-  seriously. If the answer to "what does 3D add" is "it looks impressive", the
-  honest recommendation is an optimized video.
-- **Requires the mechanic to demonstrate the service.** Decorative animation is
-  dead weight. The skill requires the climax to coincide with the call to action.
-- **Separates the two scene families** (procedural and asset-based), which have
-  completely different failure modes, and prefers procedural whenever the result
-  is equivalent.
-- **Imposes a model audit before download**: named hierarchy, density against
-  on-screen size, scale, pivot, and license.
-- **Sets a performance budget before the first line of code**, with device tiers
-  and the rule that the canvas is never the LCP.
-- **Treats mobile as the main setting**, not as a final adaptation.
-- **Covers fallback, reduced motion, and indexing**, because a canvas without
-  equivalent HTML is a site that is invisible to Google.
-
-### Install
-
-```bash
-git clone https://github.com/ElixIsmael/elix-scroll-3d.git
-cd elix-scroll-3d && ./install.sh
-```
-
-Reopen your Claude Code session. The skill loads on its own when the topic comes
-up. Use `--here` to install into the current project only, `--copy` to freeze the
-version instead of symlinking, and `--remove` to undo.
-
-Other agents (Cursor, Codex, Copilot, Gemini CLI): point them at
-[AGENTS.md](AGENTS.md), no installation required.
-
-### Presets by mechanic
-
-Organized by scene mechanic, not by client industry. The mechanic determines the
-pipeline, the cost, and the traps. The industry determines nothing.
-
-| Mechanic | Pipeline | Good at demonstrating | Main trap |
-|---|---|---|---|
-| Mask reveal | Procedural | Before and after, surface transformation | A perfect edge announces the effect |
-| Curve travelling | Either | A journey, a process with stages | Arc length sampling |
-| Orbited object | Asset | Craft, physical detail | Model weight, lighting cost |
-| Assembly explosion | Asset, hierarchy required | Internal engineering | A merged mesh cannot be fixed in code |
-| Explorable scene | Hybrid | Space as the product | Scope, and visitors getting lost |
-| State transformation | Either | Configurability | Morph targets are expensive |
-
-### It works on its own
-
-This skill is specialized: it covers only what is specific to 3D and scroll
-animation. It assumes general SEO, accessibility, and visual identity are handled
-elsewhere, and it works without depending on that.
-
-It was designed to sit alongside a base frontend and SEO skill, `elix-front`,
-which is not published yet. The link goes here when it is.
-
-### Contributing and license
-
-See [CONTRIBUTING.md](CONTRIBUTING.md). MIT, see [LICENSE](LICENSE). Measured
-numbers are worth more than estimates: if you measured it, send the measurement
-and the device.
 
 ---
 
