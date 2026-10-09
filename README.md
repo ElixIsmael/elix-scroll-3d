@@ -9,6 +9,12 @@ and genuinely usable on mid-range phones.
 
 **English** · [Português](#português)
 
+[![The demo page: a phone-shaped web page separates into its four layers as you scroll, then reassembles at the install command.](docs/img/demo.gif)](https://elixismael.github.io/elix-scroll-3d/)
+
+**[See it live →](https://elixismael.github.io/elix-scroll-3d/)** The demo page is built with this skill,
+and publishes its own budget: zero 3D assets downloaded, poster image as the LCP,
+and a static version for reduced motion, no WebGL, or a device that can't keep up.
+
 ---
 
 ## The thesis
@@ -143,6 +149,11 @@ MIT. See [LICENSE](LICENSE).
 
 Skill instalável de IA para construir sites com ambiente 3D animado por scroll que
 sejam rápidos, indexáveis e realmente bons no celular.
+
+**[Veja a demonstração →](https://elixismael.github.io/elix-scroll-3d/)** A página foi feita com
+esta skill e publica o próprio orçamento: zero asset 3D baixado, imagem de poster
+como LCP, e versão estática para movimento reduzido, falta de WebGL ou aparelho
+que não aguenta.
 
 ### A tese
 

@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en" data-mode="static">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>elix-scroll-3d — 3D on the web, without the bill</title>
+<meta name="description" content="An installable AI skill for scroll-driven 3D websites that stay fast, indexable, and usable on mid-range phones. This page is built with it.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="elix-scroll-3d — 3D on the web, without the bill">
+<meta property="og:description" content="An installable AI skill for scroll-driven 3D websites that stay fast, indexable, and usable on mid-range phones.">
+<meta property="og:image" content="https://elixismael.github.io/elix-scroll-3d/img/og.png">
+<meta property="og:url" content="https://elixismael.github.io/elix-scroll-3d/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0d0e12">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='9' y='3' width='14' height='24' rx='3' fill='%23ffb547'/%3E%3Crect x='6' y='6' width='14' height='24' rx='3' fill='none' stroke='%235ad1e6' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="preload" as="image" href="img/still-0.webp" fetchpriority="high">
+<script>
+  // Decide o modo antes da primeira pintura, para a página não piscar entre versões.
+  // Sem JavaScript, data-mode fica "static" e a página continua completa.
+  (function () {
+    var d = document.documentElement, ok = false;
+    try {
+      var c = document.createElement('canvas');
+      ok = !!(c.getContext('webgl2') || c.getContext('webgl'));
+    } catch (e) {}
+    var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var save = navigator.connection && navigator.connection.saveData;
+    if (ok && !reduce && !save) d.dataset.mode = 'scene';
+  })();
+</script>
+<style>
+  :root {
+    /* --- cor: papel --- */
+    --fundo: #0d0e12;
+    --superficie: #16181e;
+    --superficie-alt: #1d2028;
+    --texto: #ecebe6;
+    --texto-suave: #a7a69e;
+    --destaque: #ffb547;
+    --destaque-texto: #1a1205;
+    --borda: #2c2f39;
+    /* camadas da página, na mesma cor dentro e fora da cena */
+    --camada-html: #ecebe6;
+    --camada-poster: #ffb547;
+    --camada-canvas: #5ad1e6;
+    --camada-fallback: #a99cff;
+
+    /* --- espaçamento --- */
+    --e1: 0.25rem;
+    --e2: 0.5rem;
+    --e3: 1rem;
+    --e4: 1.5rem;
+    --e5: 2.5rem;
+    --e6: 4rem;
+
+    /* --- tipografia --- */
+    --fonte-titulo: 'Bricolage Grotesque', system-ui, sans-serif;
+    --fonte-texto: 'Bricolage Grotesque', system-ui, sans-serif;
+    --fonte-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+    /* --- forma --- */
+    --raio: 6px;
+    --raio-g: 14px;
+    --largura-max: 1180px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--fundo);
+    color: var(--texto);
+    font-family: var(--fonte-texto);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    font-optical-sizing: auto;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: var(--destaque); text-underline-offset: 0.2em; }
+  :focus-visible { outline: 2px solid var(--destaque); outline-offset: 3px; border-radius: 2px; }
+  code, .mono { font-family: var(--fonte-mono); font-size: 0.9em; }
+
+  .pular {
+    position: absolute; left: var(--e3); top: -4rem; z-index: 10;
+    background: var(--destaque); color: var(--destaque-texto);
+    padding: var(--e2) var(--e3); border-radius: var(--raio); font-weight: 600;
+  }
+  .pular:focus { top: var(--e3); }
+
+  /* ---------- topo ---------- */
+  .topo {
+    position: relative; z-index: 3;
+    display: flex; align-items: center; justify-content: space-between; gap: var(--e3);
+    max-width: var(--largura-max); margin: 0 auto; padding: var(--e3) var(--e3) 0;
+  }
+  .marca { font-family: var(--fonte-mono); font-weight: 500; color: var(--texto); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+  .marca span { color: var(--destaque); }
+  .topo nav { display: flex; gap: var(--e2); }
+  .topo nav a {
+    min-height: 44px; display: inline-flex; align-items: center; padding: 0 var(--e3);
+    color: var(--texto); text-decoration: none; border: 1px solid var(--borda); border-radius: 999px;
+    font-size: 0.95rem; background: var(--fundo);
+  }
+  .topo nav a:hover { border-color: var(--texto-suave); }
+
+  /* ---------- palco fixo: canvas e poster ocupam a mesma caixa ---------- */
+  .palco { display: none; }
+  [data-mode="scene"] .palco {
+    display: block; position: fixed; z-index: 0; pointer-events: none; overflow: hidden;
+    top: 0; right: 0; width: 56vw; height: 100svh;
+  }
+  .palco canvas, .palco .poster {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+  }
+  .palco .poster { object-fit: contain; transition: opacity 0.6s ease; }
+  .palco.pronto .poster { opacity: 0; }
+  .etiqueta {
+    position: absolute; left: 0; top: 0; opacity: 0;
+    font-family: var(--fonte-mono); font-size: 0.75rem; line-height: 1;
+    padding: 0.35rem 0.5rem; border-radius: 4px; white-space: nowrap;
+    background: var(--fundo); border: 1px solid currentColor;
+    will-change: transform, opacity;
+  }
+  .hud {
+    position: fixed; z-index: 2; right: var(--e3); bottom: var(--e3);
+    font-family: var(--fonte-mono); font-size: 0.75rem; color: var(--texto-suave);
+    background: color-mix(in srgb, var(--fundo) 85%, transparent);
+    border: 1px solid var(--borda); border-radius: var(--raio);
+    padding: var(--e2) var(--e3); display: none;
+  }
+  [data-mode="scene"] .hud { display: block; }
+  .hud b { color: var(--texto); font-weight: 500; }
+
+  /* ---------- história ---------- */
+  .historia { position: relative; z-index: 1; }
+  .passo {
+    max-width: var(--largura-max); margin: 0 auto;
+    padding: var(--e6) var(--e3);
+  }
+  [data-mode="scene"] .passo { min-height: 88svh; display: flex; align-items: center; }
+  .cartao { max-width: 32rem; min-width: 0; }
+  [data-mode="scene"] .cartao {
+    background: color-mix(in srgb, var(--fundo) 88%, transparent);
+    padding: var(--e4); margin-left: calc(-1 * var(--e4)); border-radius: var(--raio-g);
+  }
+  .rotulo {
+    font-family: var(--fonte-mono); font-size: 0.8rem; letter-spacing: 0.04em;
+    color: var(--texto-suave); margin: 0 0 var(--e3);
+    display: flex; align-items: center; gap: var(--e2);
+  }
+  .rotulo i { width: 0.7rem; height: 0.7rem; border-radius: 2px; background: currentColor; display: inline-block; }
+  .rotulo.html { color: var(--camada-html); }
+  .rotulo.poster { color: var(--camada-poster); }
+  .rotulo.canvas { color: var(--camada-canvas); }
+  .rotulo.fallback { color: var(--camada-fallback); }
+  h1, h2 { font-family: var(--fonte-titulo); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 var(--e3); }
+  h1 { font-size: clamp(2.6rem, 6.5vw, 5rem); }
+  h1 em { font-style: normal; color: var(--destaque); }
+  h2 { font-size: clamp(1.8rem, 3.6vw, 2.75rem); }
+  h3 { font-size: 1.15rem; margin: 0 0 var(--e2); }
+  p { margin: 0 0 var(--e3); }
+  .suave { color: var(--texto-suave); }
+  .abertura { font-size: 1.2rem; }
+
+  .acoes { display: flex; flex-wrap: wrap; gap: var(--e2); margin-top: var(--e4); }
+  .botao {
+    min-height: 48px; display: inline-flex; align-items: center; gap: var(--e2);
+    padding: 0 var(--e4); border-radius: 999px; font-weight: 600; text-decoration: none;
+    border: 1px solid var(--borda); color: var(--texto); background: var(--superficie);
+    font-family: inherit; font-size: 1rem; cursor: pointer;
+  }
+  .botao.primario { background: var(--destaque); color: var(--destaque-texto); border-color: var(--destaque); }
+  .botao:hover { filter: brightness(1.08); }
+
+  .instalar {
+    display: flex; align-items: stretch; margin-top: var(--e4);
+    border: 1px solid var(--borda); border-radius: var(--raio-g); background: var(--superficie);
+    overflow: hidden;
+  }
+  .instalar pre {
+    margin: 0; padding: var(--e3); flex: 1; min-width: 0; overflow-x: auto;
+    font-family: var(--fonte-mono); font-size: 0.85rem; line-height: 1.7;
+  }
+  .instalar pre span { color: var(--texto-suave); user-select: none; }
+  .instalar button {
+    min-width: 88px; border: 0; border-left: 1px solid var(--borda);
+    background: var(--superficie-alt); color: var(--texto); font: 500 0.9rem var(--fonte-mono); cursor: pointer;
+  }
+
+  /* figuras da versão estática: renders reais da cena nos mesmos momentos */
+  .still { margin: var(--e4) 0 0; max-width: 26rem; }
+  .still img { border-radius: var(--raio-g); background: var(--superficie); }
+  [data-mode="scene"] .still { display: none; }
+
+  /* ---------- conteúdo depois da cena ---------- */
+  .depois {
+    position: relative; z-index: 1; background: var(--fundo);
+    border-top: 1px solid var(--borda);
+  }
+  .bloco { max-width: var(--largura-max); margin: 0 auto; padding: var(--e6) var(--e3); }
+  .grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: var(--e3); margin-top: var(--e4); }
+  .grade article { background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-g); padding: var(--e4); }
+  .grade article p { margin: 0; color: var(--texto-suave); font-size: 0.98rem; }
+  .grade code { color: var(--camada-canvas); }
+  .rolagem { overflow-x: auto; margin-top: var(--e4); border: 1px solid var(--borda); border-radius: var(--raio-g); }
+  table { border-collapse: collapse; width: 100%; min-width: 40rem; font-size: 0.95rem; }
+  th, td { text-align: left; padding: var(--e3); border-bottom: 1px solid var(--borda); vertical-align: top; }
+  th { font-family: var(--fonte-mono); font-weight: 500; font-size: 0.8rem; color: var(--texto-suave); background: var(--superficie); }
+  tr:last-child td { border-bottom: 0; }
+  td.medido::after, td.estimado::after {
+    font-family: var(--fonte-mono); font-size: 0.7rem; margin-left: var(--e2);
+    padding: 0.1rem 0.4rem; border-radius: 4px; white-space: nowrap;
+  }
+  td.medido::after { content: 'measured'; color: var(--camada-canvas); border: 1px solid currentColor; }
+  td.estimado::after { content: 'estimate'; color: var(--texto-suave); border: 1px solid currentColor; }
+
+  footer { max-width: var(--largura-max); margin: 0 auto; padding: var(--e5) var(--e3) var(--e6); color: var(--texto-suave); font-size: 0.95rem; border-top: 1px solid var(--borda); }
+  footer p { margin: 0 0 var(--e2); }
+
+  .depuracao { position: fixed; z-index: 5; left: var(--e3); right: var(--e3); bottom: var(--e3); display: none; gap: var(--e3); align-items: center; font-family: var(--fonte-mono); font-size: 0.8rem; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio); padding: var(--e2) var(--e3); }
+  .depuracao input { flex: 1; }
+
+  /* modo de captura (?still=): só o palco, fundo transparente, para gerar poster e figuras */
+  .captura body { background: transparent; }
+  .captura .topo, .captura main, .captura footer, .captura .hud, .captura .pular, .captura .poster { display: none !important; }
+  .captura .palco { display: block !important; position: fixed; left: 0; top: 0; width: 800px !important; height: 900px !important; }
+
+  /* ---------- celular: a cena fica em cima, o texto passa por baixo ---------- */
+  @media (max-width: 899px) {
+    [data-mode="scene"] .palco { width: 100vw; height: 62svh; }
+    [data-mode="scene"] .passo { align-items: flex-end; padding-top: 50svh; min-height: 100svh; }
+    [data-mode="scene"] .passo.inicio { align-items: flex-start; padding-top: 44svh; }
+    [data-mode="scene"] .cartao {
+      margin-left: 0; background: var(--superficie); border: 1px solid var(--borda);
+    }
+    [data-mode="scene"] .passo.inicio .cartao { background: var(--fundo); border: 0; padding: 0; }
+    /* abaixo dos cartões, na borda de baixo da cena: o texto passa por cima */
+    .hud { z-index: 0; left: var(--e3); right: auto; bottom: auto; top: calc(62svh - 2.5rem); }
+    .topo nav a.opcional { display: none; }
+  }
+</style>
+</head>
+<body>
+<a class="pular" href="#install">Skip to install</a>
+
+<header class="topo">
+  <a class="marca" href="./">elix<span>-</span>scroll<span>-</span>3d</a>
+  <nav aria-label="Main">
+    <a class="opcional" href="#inside">What's inside</a>
+    <a href="https://github.com/ElixIsmael/elix-scroll-3d">GitHub</a>
+  </nav>
+</header>
+
+<div class="palco" id="palco" aria-hidden="true">
+  <img class="poster" src="img/still-0.webp" width="800" height="900" alt="" fetchpriority="high">
+  <span class="etiqueta" data-camada="0" style="color: var(--camada-html)">HTML · text, links</span>
+  <span class="etiqueta" data-camada="1" style="color: var(--camada-poster)">poster · the LCP</span>
+  <span class="etiqueta" data-camada="2" style="color: var(--camada-canvas)">canvas · WebGL</span>
+  <span class="etiqueta" data-camada="3" style="color: var(--camada-fallback)">static · always complete</span>
+</div>
+
+<div class="hud" id="hud" aria-hidden="true">tier <b data-hud="tier">—</b> · dpr <b data-hud="dpr">—</b> · <b data-hud="fps">warming up</b></div>
+
+<main>
+<div class="historia" id="historia">
+
+  <section class="passo inicio" aria-labelledby="t0">
+    <div class="cartao">
+      <p class="rotulo">An installable skill for Claude Code and AGENTS.md</p>
+      <h1 id="t0">3D on the web, <em>without the bill.</em></h1>
+      <p class="abertura suave">Most 3D websites stutter on mid-range phones, ship tens of megabytes, and hand Google an empty canvas. This skill gets an AI agent to build the effect without paying that price, and to say no when 3D doesn't belong.</p>
+      <div class="acoes">
+        <a class="botao primario" href="#install">Install it</a>
+        <a class="botao" href="https://github.com/ElixIsmael/elix-scroll-3d">View on GitHub</a>
+      </div>
+      <figure class="still"><img src="img/still-0.webp" width="800" height="900" alt="A phone-shaped web page, closed, as the visitor sees it."></figure>
+    </div>
+  </section>
+
+  <section class="passo" aria-labelledby="t1">
+    <div class="cartao">
+      <p class="rotulo">Step 0</p>
+      <h2 id="t1">Does 3D earn its place?</h2>
+      <p>The first thing the skill asks. If a photo or a video would say the same, it recommends the video and explains the trade. A spinning logo fails every time.</p>
+      <p class="suave">Here it earns its place: this scene shows the inside of a page, which no screenshot can. Scroll and it comes apart.</p>
+      <figure class="still"><img src="img/still-1.webp" width="800" height="900" loading="lazy" alt="The page starting to separate into its layers."></figure>
+    </div>
+  </section>
+
+  <section class="passo" aria-labelledby="t2">
+    <div class="cartao">
+      <p class="rotulo html"><i></i>Layer 1 · HTML</p>
+      <h2 id="t2">Every word lives in HTML, above the canvas.</h2>
+      <p>Never drawn into a texture. That keeps text sharp at any size, readable by screen readers, findable with Ctrl+F, and indexable by Google.</p>
+      <p class="suave">Turn WebGL off and this page still says exactly the same thing.</p>
+      <figure class="still"><img src="img/still-2.webp" width="800" height="900" loading="lazy" alt="The layers spread apart, with the front HTML layer highlighted."></figure>
+    </div>
+  </section>
+
+  <section class="passo" aria-labelledby="t3">
+    <div class="cartao">
+      <p class="rotulo poster"><i></i>Layer 2 · poster</p>
+      <h2 id="t3">The canvas is never the LCP.</h2>
+      <p>A real render of the opening frame loads first and paints in the first second. The scene starts behind it and cross-fades in when it's ready.</p>
+      <p class="suave">The image you saw at the top of this page was that poster, for a moment.</p>
+      <figure class="still"><img src="img/still-3.webp" width="800" height="900" loading="lazy" alt="The poster layer highlighted between the HTML and the canvas."></figure>
+    </div>
+  </section>
+
+  <section class="passo" aria-labelledby="t4">
+    <div class="cartao">
+      <p class="rotulo canvas"><i></i>Layer 3 · canvas</p>
+      <h2 id="t4">Budget before code. Tiers at runtime.</h2>
+      <p>Weight, frame rate and the weakest supported device are written down before the first line. Then the page measures your real frame rate and adjusts pixel ratio and detail to match.</p>
+      <p class="suave">The readout in the corner is this page measuring your device right now.</p>
+      <figure class="still"><img src="img/still-4.webp" width="800" height="900" loading="lazy" alt="The canvas layer highlighted, seen from the side."></figure>
+    </div>
+  </section>
+
+  <section class="passo" aria-labelledby="t5">
+    <div class="cartao">
+      <p class="rotulo fallback"><i></i>Layer 4 · static</p>
+      <h2 id="t5">Degrading is mandatory. Stuttering is not.</h2>
+      <p>No WebGL, reduced motion, data saver, or a device that can't keep up: the visitor gets a static version that makes the same argument, never an empty rectangle.</p>
+      <p class="suave">Turn on "reduce motion" in your system settings and reload. You'll see this page's static version.</p>
+      <figure class="still"><img src="img/still-5.webp" width="800" height="900" loading="lazy" alt="The static base layer highlighted at the back of the stack."></figure>
+    </div>
+  </section>
+
+  <section class="passo" id="install" aria-labelledby="t6">
+    <div class="cartao">
+      <p class="rotulo">Back together</p>
+      <h2 id="t6">One page. Four layers. Install it.</h2>
+      <p>Works in Claude Code out of the box. Other agents (Cursor, Codex, Copilot, Gemini CLI) just read <code>AGENTS.md</code>.</p>
+      <div class="instalar">
+        <pre id="comando"><span>$ </span>git clone https://github.com/ElixIsmael/elix-scroll-3d.git
+<span>$ </span>cd elix-scroll-3d &amp;&amp; ./install.sh</pre>
+        <button type="button" id="copiar" aria-label="Copy install commands">Copy</button>
+      </div>
+      <div class="acoes">
+        <a class="botao primario" href="https://github.com/ElixIsmael/elix-scroll-3d">Star on GitHub</a>
+        <a class="botao" href="#inside">What's inside</a>
+      </div>
+      <figure class="still"><img src="img/still-6.webp" width="800" height="900" loading="lazy" alt="The page reassembled, outlined as a complete phone screen."></figure>
+    </div>
+  </section>
+
+</div>
+
+<div class="depois">
+  <section class="bloco" id="inside" aria-labelledby="t7">
+    <p class="rotulo">What's inside</p>
+    <h2 id="t7">Ten references, loaded only when needed.</h2>
+    <p class="suave">The skill itself is short. The detail lives in reference files the agent reads when the situation calls for it.</p>
+    <div class="grade">
+      <article><h3><code>decision.md</code></h3><p>When 3D earns its place, and what the mechanic must prove about the business.</p></article>
+      <article><h3><code>pipelines.md</code></h3><p>Procedural vs. asset-based scenes, and why procedural wins whenever it ties.</p></article>
+      <article><h3><code>budget.md</code></h3><p>Core Web Vitals, weight and frame-rate budgets, device tiers and detection.</p></article>
+      <article><h3><code>asset-audit.md</code></h3><p>Hierarchy, density, scale, pivot and license, checked before you download.</p></article>
+      <article><h3><code>assets.md</code></h3><p>GLB, Meshopt, Draco, KTX2 and a mandatory <code>gltf-transform</code> pass.</p></article>
+      <article><h3><code>choreography.md</code></h3><p>One scrubbed timeline, arc-length camera curves, pacing, render loop rules.</p></article>
+      <article><h3><code>mobile.md</code></h3><p>Pixel ratio caps, gestures, the address bar problem, battery and heat.</p></article>
+      <article><h3><code>fallback-seo.md</code></h3><p>Content parity, reduced motion, no-WebGL, context loss and indexing.</p></article>
+      <article><h3><code>presets.md</code></h3><p>Six mechanics, from mask reveal to explorable scene, with their known traps.</p></article>
+      <article><h3><code>checklist.md</code></h3><p>The delivery checklist: every item passes, or becomes a finding.</p></article>
+    </div>
+  </section>
+
+  <section class="bloco" aria-labelledby="t8">
+    <p class="rotulo">This page, by its own rules</p>
+    <h2 id="t8">The budget, in the open.</h2>
+    <p class="suave">The skill's last golden rule: never invent a benchmark. Anything not measured is labelled an estimate.</p>
+    <div class="rolagem">
+      <table>
+        <thead><tr><th>Item</th><th>Value</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>3D models and textures downloaded</td><td class="medido">0 bytes</td><td>Fully procedural. Layer art is drawn in code at load time.</td></tr>
+          <tr><td>3D library (three.js 0.160)</td><td class="medido">162 KB gzip</td><td>Only requested when the scene will actually run. The static path never downloads it.</td></tr>
+          <tr><td>Animation (GSAP + ScrollTrigger 3.12)</td><td class="medido">45 KB gzip</td><td>One timeline, numeric scrub, animating a plain state object.</td></tr>
+          <tr><td>LCP element</td><td class="medido">poster image, ~0.2 s</td><td>Never the canvas. Measured in headless Chromium at 1440, 390 and 360 px wide, local server, no throttling.</td></tr>
+          <tr><td>Pixel ratio cap</td><td>2 / 1.5 / 1</td><td>High, medium and low tier. Lowered at runtime if frame rate drops under 30.</td></tr>
+          <tr><td>Weakest supported device</td><td class="estimado">mid-range Android, 2021</td><td>Not yet tested on real hardware. If you test it, open an issue with the device and the number.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+</main>
+
+<footer>
+  <p>MIT licensed. Built by <a href="https://elixsites.com.br">Elix Sites</a>, in Brazil, where a mid-range Android is the main device.</p>
+  <p><a href="https://github.com/ElixIsmael/elix-scroll-3d">Source on GitHub</a> · companion skill: <a href="https://github.com/ElixIsmael/elix-front">elix-front</a></p>
+</footer>
+
+<div class="depuracao" id="depuracao" aria-hidden="true">
+  <input type="range" min="0" max="1" step="0.001" value="0" aria-label="Timeline progress">
+  <output>0.000</output>
+</div>
+
+<script>
+  // Copiar o comando de instalação funciona em qualquer modo, inclusive o estático.
+  document.getElementById('copiar').addEventListener('click', function () {
+    var b = this, txt = 'git clone https://github.com/ElixIsmael/elix-scroll-3d.git\ncd elix-scroll-3d && ./install.sh';
+    function ok() { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 2000); }
+    if (navigator.clipboard) navigator.clipboard.writeText(txt).then(ok, function () {});
+  });
+</script>
+<!-- GSAP e three.js são carregados pelo scene.js, e só quando a cena vai rodar -->
+<script type="module" src="scene.js"></script>
+</body>
+</html>
