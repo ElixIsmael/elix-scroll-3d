@@ -19,6 +19,40 @@ commands the scene.
 The canvas never moves. Sections scroll normally, so the browser keeps native
 scrolling, native find-in-page, and native accessibility.
 
+### Section-scoped stage
+
+When the 3D belongs to one section rather than the whole page, scope the stage to
+it: a tall section with a sticky stage inside. The canvas only exists, renders,
+and costs anything while that section is on screen.
+
+```html
+<section class="pin">               <!-- height: 240vh = one screen plus the pinned distance -->
+  <div class="pin-stage">           <!-- position: sticky; top: 0; height: 100svh -->
+    <canvas></canvas>               <!-- transparent clear color, see budget.md -->
+    <div class="pin-copy">...</div>
+  </div>
+</section>
+```
+
+Sticky breaks under an ancestor with `overflow: hidden`. Use `overflow: clip` on
+ancestors that must clip.
+
+### Count progress from entry
+
+A pinned scene that starts when the section pins greets the visitor with an
+empty screen: the stage sticks before anything has happened. Count progress from
+the moment the section's top enters the viewport instead.
+
+```js
+// 0 when the section's top reaches the bottom of the viewport, 1 when its bottom does
+const r = section.getBoundingClientRect();
+const p = Math.min(1, Math.max(0, (innerHeight - r.top) / r.height));
+```
+
+With a 240vh section the stage pins at a progress of about 0.42, so the scene is
+already forming as it sticks. Time the text steps to the pinned stretch (in the
+example above, 0.42 to 1). `entryProgress` in `templates/scroll.js`.
+
 ## Single timeline
 
 One GSAP timeline with `scrub` drives everything. Never independent animations
@@ -61,6 +95,34 @@ function render() {
 else touches the same property, two systems fight over it and the result depends
 on execution order. Keeping GSAP on a state object also makes the whole scene
 inspectable and drivable from a debug slider.
+
+## Without GSAP
+
+For a page with one or two scroll-driven pieces, native scroll plus one smoothing
+function does the job and ships no library. The separation rule above still
+holds: scroll writes a target number, and the render loop eases toward it and
+poses the scene.
+
+```js
+let target = 0, p = 0;
+addEventListener('scroll', () => { target = progressFromScroll(); }, { passive: true });
+
+function frame(dt) {
+  // frame-rate independent catch-up: the equivalent of a numeric scrub
+  p += (target - p) * (1 - Math.exp(-dt * 9));
+  poseScene(p);
+}
+```
+
+| GSAP ScrollTrigger | Vanilla equivalent |
+|--------------------|--------------------|
+| `scrub: 1` | Exponential catch-up, rate 6 to 9 (starting point) |
+| `pin: true` | `position: sticky` stage inside a tall section |
+| `start` and `end` | Progress computed from `getBoundingClientRect()` |
+| `toggleActions` and callbacks | Thresholds on progress, set as a `data-step` attribute that CSS styles |
+
+Reach for GSAP when there are several overlapping timelines or complex sequencing
+to author. Helpers in `templates/scroll.js`.
 
 ## Camera on a curve
 

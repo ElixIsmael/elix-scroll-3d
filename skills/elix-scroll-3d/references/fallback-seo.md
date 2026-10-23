@@ -36,6 +36,21 @@ The poster must be a real render of the scene's opening frame, not a placeholder
 Two benefits: the transition is invisible, and the page is already correct before
 any JavaScript runs.
 
+### Prepare the scene before it is needed
+
+A scene initialized at the moment it scrolls into view hitches while shaders
+compile, right when the visitor is looking. Prepare it ahead:
+
+1. Load the 3D library and build the scene when the browser goes idle after
+   `load`, or earlier if the section comes within about a screen of the viewport.
+2. Skip the idle path when `navigator.connection.saveData` is set, so the download
+   only happens if the visitor actually scrolls there.
+3. Compile every material with `renderer.compileAsync(scene, camera)` and draw the
+   first frame before the canvas fades in.
+4. Start the render loop only when the section is visible.
+
+`whenIdleOrNear` in `templates/scroll.js`, and `prepare()` in `templates/stage.js`.
+
 Reserve the canvas dimensions in CSS so nothing shifts when it mounts. Layout
 shift here is measured directly by CLS. Thresholds in [budget.md](budget.md).
 
@@ -112,6 +127,7 @@ Cover, at minimum:
 | Failure | Behavior |
 |---------|----------|
 | No WebGL | Static sequence, no error shown to the visitor |
+| No WebGL, pinned section | The section unpins and shows every text step. A pinned screen with its stage hidden is a full screen of empty space. |
 | Model fetch fails | Static sequence, and log it for yourself |
 | Context lost | Listen for `webglcontextlost`, prevent default, attempt restore, fall back after a failed attempt |
 | Slow network | Poster stays until ready. Never an empty canvas. |

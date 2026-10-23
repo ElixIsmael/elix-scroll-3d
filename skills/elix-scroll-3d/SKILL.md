@@ -1,6 +1,6 @@
 ---
 name: elix-scroll-3d
-description: Build scroll-driven 3D web experiences that stay fast, indexable, and genuinely usable on mid-range phones. Use when the work involves scroll animation, parallax 3D effects, a Three.js scene, a GLTF or GLB model on a page, scrollytelling, a product page with 3D rotation, an animated hero, GSAP ScrollTrigger choreography, WebGL stuttering or overheating on mobile, a slow or heavy 3D site, or a canvas that Google sees as empty. Do not use for games, VR or AR, scientific or engineering data visualization, or a straightforward brochure site that does not need 3D at all.
+description: Build scroll-driven 3D web experiences that stay fast, indexable, and genuinely usable on mid-range phones. Use when the work involves scroll animation, parallax 3D effects, a Three.js scene, a GLTF or GLB model on a page, scrollytelling, a product page with 3D rotation, an animated hero, interface cards floating in 3D, GSAP ScrollTrigger choreography, WebGL stuttering or overheating on mobile, a slow, heavy, or pixelated 3D site, or a canvas that Google sees as empty. Do not use for games, VR or AR, scientific or engineering data visualization, or a straightforward brochure site that does not need 3D at all.
 ---
 
 # Scroll-driven 3D that does not punish the visitor
@@ -15,7 +15,8 @@ what is specific to 3D and scroll animation.
 
 Reference stack is Three.js plus GSAP ScrollTrigger, because that is the de facto
 standard. The budget, degradation, and fallback principles are written to survive
-a change of library.
+a change of library, and a page with one or two scroll-driven pieces can drop GSAP
+for the vanilla path in [references/choreography.md](references/choreography.md).
 
 ## Step 0: does 3D earn its place
 
@@ -72,6 +73,11 @@ writing code.
 | Procedural | Primitive geometry, shaders, masks, particles. No external asset. | Shader work and math |
 | Asset-based | One or few loaded models are the subject, scenery built from primitives | Model pipeline: audit, decimation, compression, hierarchy |
 | Hybrid | Central asset with a procedural environment | Both, and it is the most common real case |
+| Interface | Real DOM elements (cards, panels, a dashboard) moved with CSS 3D | Layout math, not the GPU |
+
+**Objects that carry text or are pieces of the product UI take the interface
+pipeline**: sharp at any pixel ratio, nothing to download, and they can be the
+real component the scene lands in.
 
 **Prefer procedural whenever the result is equivalent.** It removes weight,
 licensing, and rework in a single decision. Detail in
@@ -98,6 +104,10 @@ tier may load no 3D at all and serve the static version.
 
 Detection must be explained and must have a fallback. Never assume phone equals
 weak or desktop equals strong: a current flagship phone outruns an old laptop.
+
+Post-processing is opt-in, never bloom by default: the composer drops
+multisampling, so edges turn pixelated, and its halos make everything glow.
+Details and the pixel budget in [references/budget.md](references/budget.md).
 
 ## Step 5: asset audit, before download
 
@@ -143,6 +153,7 @@ Commands and parameters in [references/assets.md](references/assets.md).
 | Embedded animation | Drive the mixer from a time computed from scroll progress, not from frame delta, so the animation runs forward and backward with the scroll. |
 | Text synchronized, not glued | Text blocks sit still, in a comfortable reading position, timed to scene progress. Text that travels with an animated element is unreadable, especially on a phone. The sense of following comes from synchronization, not from moving the text. |
 | Text in HTML | All text lives in HTML above the canvas, never rendered into a texture. Sharpness at any size, indexing, and screen reader support. |
+| Pinned section | Count progress from the section's entry, not from the pin, so the first pinned screen already shows the scene forming. |
 | Authoring tool | Build a debug panel with a 0 to 1 control driving the same timeline, early. Tuning poses by dragging a slider saves hours against scrolling the page repeatedly. |
 | Limits | Never hijack scroll to the point where the visitor loses control of the page. There is always a clear path to the footer without watching the whole animation. |
 | Render loop | Pause when the scene leaves the viewport and when the tab is hidden. No new object allocation inside the loop. Render on demand when the scene is idle. |
@@ -154,6 +165,8 @@ Code shapes in [references/choreography.md](references/choreography.md).
 - Swipe as the primary interaction, with inertia and a drag limit
 - Minimum touch target respected, nothing depending on hover
 - **Pixel ratio capped.** This is the most common single cause of frame rate collapse.
+  Remove post-processing before lowering it further.
+- No pinned stage on phones: the section scrolls normally and the scene plays once when it enters
 - Defined behavior for the address bar appearing and disappearing, which changes viewport height
 - Reading direction preserved: if the mechanic depends on horizontal movement, it stays horizontal under vertical scroll
 - Battery and heat tested in a long session
@@ -185,6 +198,8 @@ determines the pipeline, the cost, and the traps. The industry determines nothin
 | Assembly explosion | Asset, named hierarchy required | Internal engineering, what the buyer cannot see |
 | Explorable scene | Hybrid, most expensive | Space as the product |
 | State transformation | Either | Configurability, before and after on the same object |
+| Interface fly-in | Interface | That the product is real and already working |
+| Constellation | Procedural | Coordination, structure out of scattered parts |
 
 Budgets, traps, and mobile degradation per preset in
 [references/presets.md](references/presets.md).
@@ -201,6 +216,7 @@ Budgets, traps, and mobile degradation per preset in
 - Mobile is not the reduced version of the site. It is the main setting.
 - An effect that stops someone reaching what they came for is not design, it is an obstacle.
 - Domain plausibility beats attractive framing.
+- Restraint reads as quality: the scene in the page's own tones, and glow only where the design asks for it.
 - Never invent a benchmark. If it was not measured, say it is an estimate.
 
 ## When to go deeper
@@ -217,3 +233,5 @@ Budgets, traps, and mobile degradation per preset in
 | Reduced motion, no WebGL, indexing | [fallback-seo.md](references/fallback-seo.md) |
 | Picking a mechanic and its known traps | [presets.md](references/presets.md) |
 | Before delivery | [checklist.md](references/checklist.md) |
+| Starting code: a cheap stage, the interface fly-in, scroll progress | [templates/README.md](templates/README.md) |
+| Capturing every scroll state for review, in Chromium and Firefox | [tools/README.md](tools/README.md) |

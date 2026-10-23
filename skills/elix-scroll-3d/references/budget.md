@@ -102,6 +102,39 @@ At least three. What changes per tier:
 
 All values above are starting points.
 
+### Post-processing is opt-in
+
+"On" in the table above means a pass the design cannot do without, never bloom by
+default. A composer with bloom is the most common way to make a scene look worse
+and run slower at the same time:
+
+| What the visitor sees | Cause |
+|-----------------------|-------|
+| Pixelated edges | The composer renders into a render target without multisampling, so the canvas `antialias` flag no longer applies |
+| Blurred text and fine lines | The bright pass and the blur passes smear them |
+| Glow on everything | Halos from every bright pixel stack up, which reads as amateur |
+| A hot phone | Several full-screen passes per frame spend fill rate, the scarcest resource on a phone |
+
+Default: no composer, native antialiasing, and any glow the design needs built
+into the material itself. When a pass is genuinely required, give its render
+target `samples: 4` on WebGL2 so edges stay smooth.
+
+### Pixel budget
+
+Cap the drawing buffer by pixel count as well as by ratio, so a large canvas on a
+dense screen stays inside a fixed budget:
+
+```js
+const dpr = Math.min(devicePixelRatio, 2, Math.sqrt(maxPixels / (width * height)));
+```
+
+Starting point: `maxPixels` of 3.6 million device pixels.
+
+Adapt once, not continuously: after a warm-up of about 30 frames, average the
+next 90; below 45 fps, multiply the ratio by 0.75 (never below 1) and drop the
+decorative layers. A tier that flips back and forth reads as flicker. Both
+numbers are starting points. Implemented in `templates/stage.js`.
+
 **The low tier may load no 3D at all** and serve the static version from
 [fallback-seo.md](fallback-seo.md). This is a legitimate outcome, not a defeat.
 A static page that loads instantly beats a 3D page at 12 fps.

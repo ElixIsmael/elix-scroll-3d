@@ -1,19 +1,19 @@
-# Pipelines: procedural, asset-based, hybrid
+# Pipelines: procedural, asset-based, hybrid, interface
 
-Two families of scene with completely different failure modes. Choosing wrong
-means discovering the real problem late, when the scope is already committed.
+Families of scene with completely different failure modes. Choosing wrong means
+discovering the real problem late, when the scope is already committed.
 
 ## Comparison
 
-| | Procedural | Asset-based |
-|---|---|---|
-| What builds the scene | Primitives, shaders, masks, particles | One or few loaded models |
-| Initial download | Effectively zero beyond the library | The model, its textures, and the decoder |
-| Where difficulty sits | Shader math, noise, tuning by eye | Audit, decimation, compression, hierarchy |
-| Licensing risk | None, you authored it | Real, and it must be checked before download |
-| Iteration speed | Fast. Change a number, see the result. | Slow. A hierarchy fix means a Blender round trip. |
-| Failure mode | Looks synthetic, too clean | Ships heavy, stutters, or cannot animate the part you need |
-| Scales to low tier by | Reducing counts and resolution | Swapping a lower-poly variant, or dropping to static |
+| | Procedural | Asset-based | Interface |
+|---|---|---|---|
+| What builds the scene | Primitives, shaders, masks, particles | One or few loaded models | Real DOM elements (cards, panels, a dashboard) moved with CSS 3D transforms |
+| Initial download | Effectively zero beyond the library | The model, its textures, and the decoder | Nothing. No 3D library at all. |
+| Where difficulty sits | Shader math, noise, tuning by eye | Audit, decimation, compression, hierarchy | Layout math: measuring slots, mapping scroll to poses |
+| Licensing risk | None, you authored it | Real, and it must be checked before download | None |
+| Iteration speed | Fast. Change a number, see the result. | Slow. A hierarchy fix means a Blender round trip. | Fast |
+| Failure mode | Looks synthetic, too clean | Ships heavy, stutters, or cannot animate the part you need | Flat light, and elements crossing content mid-flight |
+| Scales to low tier by | Reducing counts and resolution | Swapping a lower-poly variant, or dropping to static | Not flying: elements stay in place with an ordinary entrance |
 
 ## Prefer procedural when the result is equivalent
 
@@ -55,12 +55,37 @@ Central asset plus procedural environment. Budget it as asset-based, because the
 model dominates the weight and the risk, and build the environment with the
 procedural discipline: counts as variables, no second model for scenery.
 
+## When the objects are interface
+
+If the objects in the scene carry text or are pieces of the product interface
+(cards, status chips, a panel, a dashboard), build them as DOM elements moved with
+CSS 3D transforms, not as meshes with a canvas texture.
+
+| DOM element in CSS 3D | Canvas texture on a mesh |
+|-----------------------|--------------------------|
+| Sharp at any pixel ratio, rasterized by the browser | Blurs when scaled, and any post-processing blurs it further |
+| Zero download | The 3D library, plus a texture redraw per state change |
+| Interactive, focusable, indexable | Needs a separate HTML equivalent |
+| Can be the real component the scene hands over to | Must be swapped for the real component at the end |
+
+What it cannot do: real lighting, reflections, depth of field, a vanishing point
+shared by many elements (`perspective()` is per element), or more than roughly a
+dozen moving elements. Light it with a gradient sheen and a shadow that deepens
+while the element floats. Animate `transform` and `opacity` only, and shrink the
+floating pose from the natural size, never enlarge it: an element blown up from a
+small raster turns soft.
+
+The worked mechanic is the interface fly-in in [presets.md](presets.md), with
+starting code in `templates/fly-cards.js`.
+
 ## Choosing, in order
 
-1. Can the effect be procedural without the result suffering? If yes, stop here.
-2. Is a specific real object the subject? If yes, asset-based for that object only.
-3. Does the scene need surroundings? Build them procedurally, not as more assets.
-4. Does a specific part need to animate independently? Go to
+1. Are the objects interface, carrying text or product UI? Interface pipeline for
+   them. A procedural scene can still sit elsewhere on the page.
+2. Can the effect be procedural without the result suffering? If yes, stop here.
+3. Is a specific real object the subject? If yes, asset-based for that object only.
+4. Does the scene need surroundings? Build them procedurally, not as more assets.
+5. Does a specific part need to animate independently? Go to
    [asset-audit.md](asset-audit.md) before downloading anything.
 
 ## Cost that people forget

@@ -40,9 +40,16 @@ Each item either passes, or becomes a finding with the code that causes it.
 - [ ] Embedded animation driven by scroll-derived time, running both directions
 - [ ] Text is fixed and timed, not travelling with the animation
 - [ ] All text is HTML above the canvas, none rendered into a texture
+- [ ] Objects that carry text or are product UI are DOM elements in CSS 3D, not canvas textures
 - [ ] Debug slider exists and is gated behind a query parameter
 - [ ] Scroll is never hijacked past the point of visitor control
 - [ ] The footer is reachable without watching the whole animation
+- [ ] A pinned section counts progress from its entry, and no pinned screen shows an empty stage
+
+## Look
+
+- [ ] The scene uses the page's own two or three tones, with state shown by lightness rather than by hue
+- [ ] Where the canvas sits over a patterned background, it clears to transparent and its edge is invisible
 
 ## Render loop
 
@@ -50,6 +57,8 @@ Each item either passes, or becomes a finding with the code that causes it.
 - [ ] Pauses when the tab is hidden
 - [ ] No object allocation inside the loop
 - [ ] Renders on demand when the scene is idle
+- [ ] No post-processing unless the design needs a specific pass, and that pass is multisampled
+- [ ] The scene is prepared before it is visible: library loaded on idle or approach, shaders compiled, first frame drawn
 - [ ] Geometry, materials, textures, and render targets disposed on teardown
 - [ ] No memory growth across a long session
 
@@ -63,7 +72,9 @@ Each item either passes, or becomes a finding with the code that causes it.
 
 ## Mobile
 
-- [ ] Pixel ratio capped per tier
+- [ ] Pixel ratio capped per tier, with a pixel budget on top
+- [ ] Post-processing removed before the pixel ratio was lowered
+- [ ] No pinned stage on phones: the section scrolls and the scene plays once on entry
 - [ ] Swipe works, with inertia and a drag limit
 - [ ] Nothing depends on hover
 - [ ] Touch targets meet the minimum
@@ -82,6 +93,7 @@ Each item either passes, or becomes a finding with the code that causes it.
 - [ ] Canvas dimensions reserved, no layout shift on mount
 - [ ] Keyboard path complete, with visible focus, and no focus trap
 - [ ] No WebGL: static version, no error surfaced to the visitor
+- [ ] No WebGL: pinned sections unpin and show every text step
 - [ ] Model fetch failure: static version, logged for the developer
 - [ ] `webglcontextlost` handled with a restore attempt and a fallback
 - [ ] `saveData` honored as an explicit request for less
@@ -94,6 +106,11 @@ Thresholds from web.dev, measured at the 75th percentile.
 - [ ] INP 200 ms or less
 - [ ] CLS 0.1 or less
 - [ ] Measured on the reference device and on a throttled connection, not only on the development machine
+
+## Verification
+
+- [ ] Every scroll state captured at phone and desktop widths, in Chromium and in Firefox (`tools/README.md`)
+- [ ] Headless captures used as layout evidence only, never as frame rate evidence
 
 ## Final
 

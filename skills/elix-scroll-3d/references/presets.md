@@ -105,7 +105,7 @@ A navigable space rather than a fixed path.
 |---|---|
 | **Good at demonstrating** | Space as the product. Venues, interiors, built environments. |
 | **Pipeline** | Hybrid |
-| **Budget** | The highest of the six. |
+| **Budget** | The highest of these presets. |
 | **Mobile** | Hardest case. The low tier here is frequently "serve the static tour". |
 
 **Trap: scope.** Freedom to explore means every angle must hold up, which
@@ -141,6 +141,99 @@ morph targets.
 including halfway through. Every intermediate frame is a frame someone will look
 at. A transition that only makes sense at its endpoints is a broken transition.
 
+## 7. Interface fly-in
+
+Pieces of the real product interface float in perspective beside the hero and
+land in their slots of the working interface as the visitor scrolls.
+
+| | |
+|---|---|
+| **Good at demonstrating** | That the product is real and working. A dashboard assembling from the records it shows. Software whose interface is the product. |
+| **Pipeline** | Interface: DOM elements in CSS 3D, see [pipelines.md](pipelines.md) |
+| **Budget** | Near zero. No 3D library and no assets; a handful of transformed elements per frame while the flight runs. |
+| **Mobile** | No flight below the width where side zones fit beside the text (starting point 1100 px). The elements stay in their slots and enter with a staggered fade when the list scrolls into view. |
+
+Build: `templates/fly-cards.js`. Each element is laid out in its final slot by
+ordinary CSS. The script measures the slot, offsets the element to a floating pose
+beside the text, and scrubs the offset to zero. The floating elements keep their
+live state, so the interface is already working in the hero.
+
+**Trap: one eased curve for the whole transform.** The element rides up with the
+hero, then races across the content mid-scroll. Split the axes: vertical travel
+close to linear, so on screen the element barely moves and waits while the
+interface rises to meet it; the move to its column, the tilt, and the scale late
+in the progress.
+
+**Trap: the flight crosses whatever sits between hero and destination.** A section
+heading in that gap gets covered mid-read. Put the destination directly under the
+hero, and move its explanation to one line beside or below the interface.
+
+**Trap: measuring a transformed element.** Clear the transform before reading slot
+positions, and measure again on width change and after fonts load. When an
+element settles, remove the transform entirely: the final state is the
+untransformed element, sharp and fully interactive.
+
+Fourth trap: scale. The floating pose shrinks the element from its natural size,
+at or below 1. An element blown up from a small raster turns soft.
+
+Starting parameters, from one production page, not benchmarks:
+
+| Parameter | Value |
+|-----------|-------|
+| Elements | 6 cards, three per side, poses in `SIX_CARDS` |
+| Floating scale | 0.66 to 0.8 |
+| Tilt toward the text | 15 to 27 degrees around Y, under 8 around X and Z |
+| Landing point | slots' center at 56% of the viewport height |
+| Scroll smoothing | rate 9, as `1 - exp(-dt * 9)` |
+| Stagger | 0.02 of the progress per element |
+| Idle float, pointer parallax | 6 px, 14 by 9 px at full depth |
+| Entrance after the intro | 0.12 s plus 0.07 s per element, about 1 s each |
+
+## 8. Constellation
+
+Scattered points organize into groups, and a central node connects to every group
+as the visitor scrolls.
+
+| | |
+|---|---|
+| **Good at demonstrating** | Coordination. Structure out of scattered parts. One person seeing a whole operation: teams, networks, distribution. |
+| **Pipeline** | Procedural: points, a few transparent spheres, line segments, one small brand mark |
+| **Budget** | Very low geometry. The cost is the fill rate of overlapping transparent points, so counts and point size are the levers. |
+| **Mobile** | Good. No pinned stage on phones: the section scrolls normally and the scene plays once when it enters. |
+
+Build: `templates/stage.js` with `softPointsMaterial`, and `templates/scroll.js`
+for progress. Group labels are HTML elements projected over the canvas each frame
+with `vector.project(camera)`, so they stay sharp and readable.
+
+**Trap: a rainbow.** One hue per group and one per status turns the scene into
+confetti. Use the page's own two or three tones and show state by lightness: lit
+is available, dim is not.
+
+**Trap: glow soup.** Additive blending plus bloom turns every overlap into a light
+source. Normal alpha blending, soft-edged points, and no post-processing keep it
+legible. Details in [budget.md](budget.md).
+
+**Trap: an empty first pinned screen.** If progress starts when the section pins,
+the visitor scrolls into a screen of scattered dots. Count progress from the
+section's entry, so the groups are already forming as it arrives. See
+[choreography.md](choreography.md).
+
+Fourth trap: the canvas edge. An opaque canvas over a patterned page background
+shows its rectangle. Clear to transparent.
+
+Starting parameters, from one production page, not benchmarks:
+
+| Parameter | Value |
+|-----------|-------|
+| Groups and members | 3 groups of 12 |
+| Group sphere radius, member orbit radius | 0.9 and 1.3 world units |
+| Point size | 0.1 world units lit, 0.085 dim, 1.4 times larger on canvases under 600 px |
+| Lines | opacity 0.32, fading in from progress 0.44 to 0.8 |
+| Pulses along the lines | 10, 6 on small screens |
+| Background dust | 220 points, 110 on small screens, dropped on the adaptive step |
+| Camera | fov 32, distance fitted to the composition for any aspect, path from 0.6 rad off axis to frontal |
+| Phone autoplay | starts at 15% visibility, 4 s until fully organized |
+
 ## Choosing
 
 | If the argument is | Start with |
@@ -151,6 +244,8 @@ at. A transition that only makes sense at its endpoints is a broken transition.
 | Here is what is inside | Assembly explosion |
 | This is the space | Explorable scene |
 | It adapts to you | State transformation |
+| This is our product, already working | Interface fly-in |
+| We bring scattered people or parts into one structure | Constellation |
 
 Cheapest that makes the argument wins. A mask reveal that demonstrates the
 service beats an explorable scene that decorates it.

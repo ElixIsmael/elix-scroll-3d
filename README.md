@@ -65,6 +65,11 @@ that produces slow websites.
 - **Treats mobile as the main setting**, not as a final adaptation.
 - **Covers fallback, reduced motion, and indexing**, because a canvas without
   equivalent HTML is a site that is invisible to Google.
+- **Keeps interface in the DOM.** Cards, panels, and dashboards fly in CSS 3D and
+  land in the real product UI: sharp at any pixel ratio, with nothing to download.
+- **Ships starting code and capture tools**: a cheap Three.js stage, the interface
+  fly-in, scroll progress helpers, and screenshots of every scroll state in
+  Chromium and Firefox.
 
 Reference stack is Three.js plus GSAP ScrollTrigger. The budget, degradation,
 and fallback principles are written to survive a change of library.
@@ -203,6 +208,12 @@ skill que produz sites lentos.
 - **Trata o celular como cenário principal**, não como adaptação final.
 - **Cobre fallback, reduced motion e indexação**, porque canvas sem HTML
   equivalente é site invisível para o Google.
+- **Mantém interface no DOM.** Cartões, painéis e dashboards voam em CSS 3D e
+  pousam na interface real do produto: nítidos em qualquer densidade de tela, sem
+  nada para baixar.
+- **Traz código inicial e ferramentas de captura**: um palco Three.js econômico, o
+  voo de interface, helpers de progresso de rolagem e prints de cada estado da
+  rolagem no Chromium e no Firefox.
 
 ### Instalar
 

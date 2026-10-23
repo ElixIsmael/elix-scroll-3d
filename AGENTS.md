@@ -30,8 +30,13 @@ Do not start with technique. The skill's first two steps are decisions:
 | Sample camera curves by arc length | `getPointAt`, not `getPoint`, or the camera accelerates on its own through curves |
 | Cap the pixel ratio on mobile | The most common single cause of frame rate collapse |
 | `prefers-reduced-motion` gets a static equivalent | Not a slower animation |
+| Objects that carry text are DOM elements in CSS 3D | The interface pipeline: sharp at any pixel ratio, nothing to download, and the element can be the real component |
+| No post-processing by default | The composer drops multisampling, so edges turn pixelated, and bloom makes everything glow |
+| A pinned section counts progress from its entry | The first pinned screen already shows the scene forming, never an empty stage |
 
-Detail lives in `skills/elix-scroll-3d/references/`. Before delivery, run
+Detail lives in `skills/elix-scroll-3d/references/`, starting code in
+`skills/elix-scroll-3d/templates/`, and capture tools in
+`skills/elix-scroll-3d/tools/`. Before delivery, run
 `references/checklist.md` item by item, reporting each failure with the line and
 snippet that causes it.
 

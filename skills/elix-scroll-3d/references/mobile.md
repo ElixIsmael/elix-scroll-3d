@@ -20,6 +20,28 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, cap));
 Caps above are starting points. When frame rate is short, this is the first lever
 to pull, before removing anything the visitor can see.
 
+Two refinements:
+
+- Remove post-processing before dropping the ratio. A ratio of 1 on a 3x screen
+  is what visitors describe as pixelated, and the composer's full-screen passes
+  are often the larger cost. Measure both on the reference device.
+- Add a pixel budget on top of the ratio cap, per [budget.md](budget.md), so a
+  tall canvas on a dense screen cannot blow up the drawing buffer.
+
+## Pinned stages
+
+A stage pinned while the page scrolls is built for a wide screen. On a portrait
+phone it leaves screen after screen of empty space around a small scene, and the
+visitor reads it as a broken page.
+
+On phones:
+
+- Let the section scroll as an ordinary section, with no pin.
+- Place the scene between the two blocks of text it illustrates, sized so the
+  whole composition fits its frame. Fit the camera to the composition's bounds
+  for the frame's aspect, rather than reusing the desktop framing.
+- Play the scene once when it enters. Starting point: at 15% visibility, over 4 s.
+
 ## Gesture
 
 | Rule | Detail |
